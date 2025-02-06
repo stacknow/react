@@ -1,10 +1,10 @@
-# Stage 1: Build the React app
-FROM node:18-alpine AS build
+# Step 1: Build the Vite app
+FROM node:18 AS build
 
-# Set the working directory
+# Set working directory
 WORKDIR /app
 
-# Copy only the dependency files first for efficient caching
+# Copy package.json and package-lock.json
 COPY package*.json ./
 
 # Install dependencies
@@ -13,17 +13,23 @@ RUN npm install
 # Copy the rest of the application code
 COPY . .
 
-# Build the React app for production
+# Build the app for production
 RUN npm run build
 
-# Stage 2: Serve the app with Nginx
-FROM nginx:stable-alpine
+# Step 2: Serve with NGINX
+FROM nginx:alpine
 
-# Copy the React build output to the Nginx html directory
-COPY --from=build /app/build /usr/share/nginx/html
+# Copy the build output to NGINX's public directory
+COPY --from=build /app/dist /usr/share/nginx/html
 
-# Expose port 80 to the outside world
+# Remove the default NGINX configuration
+RUN rm /etc/nginx/conf.d/default.conf
+
+# Add a custom NGINX configuration
+COPY nginx.conf /etc/nginx/conf.d
+
+# Expose port 80
 EXPOSE 80
 
-# Start the Nginx server
+# Start NGINX
 CMD ["nginx", "-g", "daemon off;"]
