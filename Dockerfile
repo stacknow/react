@@ -1,5 +1,5 @@
 # Stage 1: Build the React app
-FROM node:14-alpine as build
+FROM node:18-alpine as build
 WORKDIR /app
 # Copy dependency definitions
 COPY package.json package-lock.json ./
